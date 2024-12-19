@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Juego de Cartas de Reflexión</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #card-box {
+            width: 300px;
+            height: 450px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            perspective: 1000px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card {
+            width: 250px;
+            height: 400px;
+            border-radius: 15px;
+            position: absolute;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .card-back {
+            background-color: #f8f9fa;
+            transform: rotateY(180deg);
+            font-size: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div id="card-box">
+        <!-- Las cartas se generarán dinámicamente con JavaScript -->
+    </div>
+
+    <script>
+        class ReflectionCardGame {
+            constructor(questions) {
+                this.originalQuestions = [...questions]; // Copia del array original
+                this.questions = [...questions];
+                this.usedQuestions = []; // Preguntas ya utilizadas
+                this.cardBox = document.getElementById('card-box');
+                this.currentCard = null;
+                this.cardState = 'initial'; // Estados: 'initial', 'drawn', 'flipped'
+
+                // Evento inicial para dibujar la primera carta
+                this.cardBox.addEventListener('click', () => this.handleCardInteraction());
+            }
+
+            handleCardInteraction() {
+                switch(this.cardState) {
+                    case 'initial':
+                        this.drawCard();
+                        break;
+                    case 'drawn':
+                        this.flipCard();
+                        break;
+                    case 'flipped':
+                        this.returnCardToDeck();
+                        break;
+                }
+            }
+
+            drawCard() {
+                // Si ya se han usado todas las preguntas, reiniciar
+                if (this.questions.length === 0) {
+                    this.resetQuestions();
+                }
+
+                // Seleccionar una pregunta al azar
+                const randomIndex = Math.floor(Math.random() * this.questions.length);
+                const selectedQuestion = this.questions.splice(randomIndex, 1)[0];
+                this.usedQuestions.push(selectedQuestion);
+
+                // Crear la carta
+                this.createCard(selectedQuestion);
+
+                // Actualizar estado
+                this.cardState = 'drawn';
+            }
+
+            createCard(question) {
+                // Remover cualquier carta existente
+                if (this.currentCard) {
+                    this.cardBox.removeChild(this.currentCard);
+                }
+
+                // Crear nueva carta
+                this.currentCard = document.createElement('div');
+                this.currentCard.classList.add('card');
+
+                // Lado frontal
+                const cardFront = document.createElement('div');
+                cardFront.classList.add('card-front');
+                cardFront.innerHTML = '<h2>Reflexión Personal</h2>';
+
+                // Lado trasero
+                const cardBack = document.createElement('div');
+                cardBack.classList.add('card-back');
+                cardBack.textContent = question;
+
+                // Añadir lados a la carta
+                this.currentCard.appendChild(cardFront);
+                this.currentCard.appendChild(cardBack);
+
+                // Añadir carta al contenedor
+                this.cardBox.appendChild(this.currentCard);
+            }
+
+            flipCard() {
+                // Voltear la carta
+                this.currentCard.classList.add('flipped');
+                this.cardState = 'flipped';
+            }
+
+            returnCardToDeck() {
+                // Eliminar la carta
+                this.cardBox.removeChild(this.currentCard);
+                this.currentCard = null;
+                
+                // Restablecer estado
+                this.cardState = 'initial';
+                
+                // Dibujar nueva carta
+                this.drawCard();
+            }
+
+            resetQuestions() {
+                // Restaurar preguntas originales
+                this.questions = [...this.originalQuestions];
+                this.usedQuestions = [];
+            }
+        }
+
+        // Lista de preguntas predefinidas (puedes modificarlas fácilmente)
+        const reflectionQuestions = [
+            "¿Cuál ha sido el momento más significativo de tu día?",
+            "¿Qué te hace sentir verdaderamente feliz?",
+            "¿Qué miedo te gustaría superar?",
+            "¿Cómo defines el éxito para ti?",
+            "¿Qué te hace sentir agradecido hoy?",
+            "¿Cuál es tu mayor sueño?",
+            "¿Qué te hace sentir vulnerable?",
+            "¿Qué cambiarías de tu pasado si pudieras?",
+            "¿Qué te motiva a seguir adelante?",
+            "¿Cómo defines el amor?",
+            "¿Qué te gusta y la mayoría de las personas no?",
+            "¿Eres idealista o realista? ¿Cómo impacta en tu vida y relaciones?",
+            "¿Reconoces tus defectos? ¿Y tus virtudes? ¿Cuáles son?",
+            "¿De qué cumplido te sientes más orgulloso/a?",
+            "¿Qué actividades solías disfrutar antes y ya no?",
+            "¿Sueles culpar a otras personas por lo que te sucede? ¿En qué situaciones?",
+            "¿Una decisión importante que hayas tomado?",
+            "¿Qué sentiste en tu primer día de universidad o trabajo? Si no has tenido esas experiencias, ¿qué esperas de ellas?",
+            "¿Prefieres reflexionar solo/a o acompañado/a? ¿Qué temas despiertan tu curiosidad últimamente?",
+            "¿Qué actividad tiendes a postergar?",
+            "¿Quién es una persona que te alivie en momentos tristes?",
+            "¿En qué momentos del día prefieres reflexionar?",
+            "¿Hay alguna actividad que disfrutes tanto que pierdas la noción del tiempo?",
+            "Los domingos son… ¿aburridos o agradables? ¿Te gusta empezar la semana?",
+            "¿Tienes una fuente de motivación en este momento? ¿Cuál es o podría ser?",
+            "¿Te dedicas tiempo a ti mismo/a? ¿Qué haces en esos momentos?",
+            "¿Cuál fue tu primera impresión de la persona que está a tu izquierda?",
+            "¿Qué primera impresión crees que das a los demás?",
+            "¿Qué destacarías de las personas que te criaron?",
+            "¿Qué destacarías de tus amistades?",
+            "¿Piensas más en el ''por qué'' o en el ''para qué'' de las cosas?",
+            "¿Qué aventura tienes pendiente por realizar?",
+            "Si pudieras tener éxito en lo que quieras, ¿en qué sería?",
+            "¿Te consideras una persona prejuiciosa? ¿Por qué?",
+            "¿Cuándo fue la última vez que hiciste algo por primera vez? ¿Qué fue?",
+            "¿Un momento simple que disfrutes?",
+            "Menciona tres características que te definan.",
+            "Si pudieras elegir otra profesión o carrera, ¿cuál sería?",
+            "¿Con qué tipo de personalidad conectas más?",
+            "Si tuvieras que elegir a alguien para acompañarte en una experiencia espiritual, ¿quién sería? ¿Por qué?",
+            "Cuando eras niño/a, ¿cómo te imaginabas siendo adulto/a?",
+            "¿Te sientes libre de tomar tus propias decisiones?",
+            "Quiero o tengo. ¿Cuál de las dos domina tu día a día?",
+            "¿Tomas decisiones porque estás preparado/a o porque son las esperadas para tu edad?",
+            "Menciona a alguien que te inspire.",
+            "¿Te has enamorado alguna vez? ¿Quién fue la primera persona y qué te gustó de ella?",
+            "¿Cómo reaccionas ante algo que te molesta?",
+            "¿Qué actitudes no te agradan pero las toleras en una persona? ¿Y cuáles valoras?",
+            "¿Una situación que te incomode?",
+            "Cuando te sientes bien contigo mismo/a, ¿con quién disfrutas estar?",
+            "¿Te permites ser vulnerable? ¿Con quién?",
+            "¿Te afectan las opiniones de los demás?",
+            "Perdonar o pedir perdón. ¿Cuál te resulta más difícil?",
+            "¿Qué disfrutas de tu día a día? ¿Qué no?",
+            "La razón o la emoción. ¿Cuál tiene más peso en ti? ¿Te gusta que sea así o preferirías cambiarlo?",
+            "Un talento inútil que te enorgullezca es ____.",
+            "¿Crees en el amor a primera vista?",
+            "Si fueras de otro género, ¿qué sería lo primero que harías?",
+            "Si algo te gusta, ¿estarías dispuesto/a a asumir cualquier riesgo?",
+            "¿Qué personaje de película o serie te gustaría ser? ¿Por qué?",
+            "¿Preferirías volver al pasado o ir al futuro? ¿Por qué?",
+            "¿Qué fantasía te gustaría hacer realidad?",
+            "¿Qué actividad extrema te gustaría probar?",
+            "¿Has tenido alguna experiencia paranormal? ¿Cómo fue y con quién estabas?",
+            "¿Algo ridículo por lo que te gustaría que te pagaran?",
+            "¿Qué canción elegirías para cantar en un karaoke?",
+            "¿Cuál es tu lugar favorito en casa? ¿Por qué?",
+            "¿Elegirías vivir en otra época? ¿Cuál y por qué?",
+            "¿Con quién fue tu primer beso? ¿Qué sentiste?",
+            "Menciona tres cosas que te hacen feliz.",
+            "¿Qué regalo diste por última vez? ¿Y cuál fue el último que recibiste?",
+            "¿Te animarías a vivir una experiencia en el extranjero? ¿Cuál sería?",
+            "¿Una canción que te alegre?",
+            "¿Cuál es tu película favorita?",
+            "¿Tienes un sueño recurrente?",
+            "¿Cuál es tu libro favorito?",
+            "¿Qué comida te recuerda a tu hogar?",
+            "¿Un pensamiento recurrente que tengas?",
+            "¿En qué momento del día tienes tus mejores ideas?",
+            "Menciona tres cosas que disfrutas hacer, pero que sientes que no haces bien.",
+            "Si pudieras crear tu lugar ideal en el mundo, ¿cómo sería?",
+            "Si fueras un objeto, ¿cuál serías? ¿Por qué?",
+            "Si fueras un animal, ¿cuál elegirías ser? ¿Por qué?",
+            "¿Cuál es el mejor lugar que has conocido?",
+            "¿Una situación vergonzosa que recuerdes?",
+            "¿Qué recuerdas de tu primera cita?",
+            "Si fueras embajador/a, ¿qué lugar elegirías para vivir? ¿Y a cuál no irías?",
+            "¿Cuáles son tus tres placeres culposos?",
+            "Comparte un miedo absurdo que tengas.",
+            "¿Quién de las personas presentes sería el mejor comediante?",
+            "¿Un viaje pendiente que te gustaría realizar?",
+            "¿En qué te habría gustado ser bueno/a?",
+            "Si escribieras un libro, ¿de qué trataría? ¿Cómo lo titularías?",
+            "¿Qué cuento te relataban durante tu infancia?",
+            "¿Qué título le pondrías a una película sobre tu vida?",
+            "¿Qué es lo primero que observas en una persona?",
+            "¿Sobre qué tema consideras que tienes mucho conocimiento?",
+            "¿Qué tres deseos pedías cuando eras niño/a? ¿Y ahora?",
+            "¿Te asusta el futuro? ¿Por qué?",
+            "Si fueras una persona famosa, ¿quién serías? ¿Por qué?",
+            "Menciona tres cosas que te den vergüenza ajena.",
+            "¿Qué es lo que más te gusta del barrio donde vives?",
+            "Si pudieras crear un feriado, ¿por qué motivo sería?",
+            "Cuando ayudas a alguien, ¿lo haces por ti o por la otra persona? ¿Crees que existen las acciones desinteresadas?",
+            "¿Crees que todas las personas tienen un propósito en esta vida? ¿Cuál sientes que es el tuyo?",
+            "Si pudieras volver a elegir tu género, ¿cuál elegirías? ¿Por qué?",
+            "Es mejor pedir perdón que permiso. ¿Qué opinas sobre esta expresión?",
+            "La educación que recibí me enseñó a _____.",
+            "¿Qué opinas sobre las muestras de afecto en público?",
+            "Elige un trabajo que te guste y no tendrás que trabajar ni un día de tu vida ¿Qué opinas?",
+            "¿Vivirías sin amor de amistad o sin amor de pareja?",
+            "Dime con quién andas y te diré quién eres. ¿Qué opinas?",
+            "¿Qué es el éxito para ti? ¿Evalúas diferentes formas de sentirte exitoso/a?",
+            "¿El fin justifica los medios?",
+            "¿Qué significa ser libre en una relación de pareja? ¿Qué diferencias encuentras con otros vínculos?",
+            "¿Qué diferencias crees que existen entre el amor y el enamoramiento?",
+            "¿Crees en la idea de la media naranja? ¿Piensas que necesitamos algo o alguien externo para sentirnos completos/as?",
+            "¿Crees en las segundas oportunidades?",
+            "¿Crees que existe el momento indicado para empezar o terminar un proyecto? ¿Cómo te das cuenta?",
+            "Si no te cela, no te quiere ¿Qué opinas sobre esta frase?",
+            "¿Crees que las personas pueden cambiar?",
+            "¿Consideras importante la educación sexual? ¿Quiénes deberían hablar de este tema?",
+            "¿Qué opinas sobre la monogamia?",
+            "¿La educación escolar nos prepara para la adultez?",
+            "¿Qué cambiarías del mundo?",
+            "Un buen resultado sin esfuerzo, ¿vale menos?",
+            "¿Qué mandatos o presiones crees que existen entre los hombres?",
+            "¿Casualidad o causalidad?",
+            "¿Qué o quién influye en tu forma de pensar? ¿Por qué?",
+            "¿Crees que hay una razón por la que naciste en tu familia?",
+            "¿Elegimos lo que somos o lo impone nuestro entorno?",
+            "¿Qué opinas sobre la educación sin distinción de géneros?",
+            "¿Todo lo que pensamos es lo que deseamos? ¿Por qué?",
+            "¿Es posible estar bien con los demás sin estar bien contigo mismo/a?",
+            "¿Qué significa la sexualidad para ti?",
+            "¿Crees que los pensamientos de una persona la definen? ¿En qué medida? ¿Por qué?",
+            "¿Crees que vamos hacia una sociedad sin estereotipos? ¿Consideras que esto representa evolución?",
+            "¿Qué creencias se les imponen a los niños/as y no estás de acuerdo?",
+            "¿Crees que una persona adulta puede aprender de un joven? ¿En qué sentido?",
+            "¿Cómo definirías una relación tóxica?",
+            "¿El lenguaje es cómplice o enemigo de la inclusión social?",
+            "¿Qué es el amor propio?",
+            "¿Qué temas consideras tabú? ¿Por qué?",
+            "¿Cuándo crees que es importante empezar a tener noción sobre la sexualidad?",
+            "Una mujer toma la iniciativa en una relación heterosexual. ¿Qué opinas?",
+            "¿Alguna vez dejaste de hacer algo por tu género?",
+            "¿Crees que se puede hacer humor con todo? ¿Qué opinas?",
+            "Detrás de un gran hombre hay una gran mujer ¿Qué opinas?",
+            "Si miras al pasado, ¿cómo ves al adolescente que fuiste?",
+            "¿Qué mandatos cargas y sufres?",
+            "¿Qué estás trabajando en tu interior que te gustaría compartir?",
+            "¿Sientes que te quedó algo pendiente con alguien? ¿Por qué no hiciste nada al respecto?",
+            "Destaca una virtud de alguna de las personas presentes.",
+            "¿Cuál es el sueño más grande que tienes?",
+            "¿Eres obsesivo/a? ¿En qué sentido?",
+            "¿Qué creencia te gustaría desaprender?",
+            "¿Tuviste amistades que no fueron sanas? ¿Cómo lo manejaste?",
+            "¿Qué pensaste el día que nació tu primer hijo/a? Si no tienes hijos/as, ¿te gustaría tener?",
+            "¿Un recuerdo valioso de tu infancia?",
+            "¿Una persona o experiencia que te haya marcado?",
+            "¿Cómo te ves en esta etapa de tu vida?",
+            "¿Alguna vez tuviste un acto valioso con alguien que no presumas mucho, pero que te hace sentir orgulloso/a?",
+            "¿Dejaste de hacer cosas por miedo al fracaso? ¿Cuáles?",
+            "¿Qué aprendiste de ti este último año?",
+            "Si pudieras volver al pasado y cambiar algo, ¿qué sería? ¿Por qué?",
+            "Describe tu relación contigo mismo/a.",
+            "Si pudieras volver al pasado, ¿qué te dirías?",
+            "¿Qué cambiarías de tu crianza si tuvieras que educar a alguien?",
+            "¿Cuál es tu mayor miedo?",
+            "¿Cuándo fue la última vez que dijiste ''Te quiero''? ¿A quién se lo dijiste?",
+            "¿Qué etiqueta sientes que cargas y no te identifica?",
+            "¿Qué te da culpa?",
+            "Siendo adulto/a, ¿cómo te hubiera gustado ser de niño/a?",
+            "¿Alguna vez escuchaste o leíste una conversación sin permiso? ¿Por qué?",
+            "¿Qué pensaste el día de tu boda? Si no te casaste, ¿te gustaría?",
+            "¿Te gustaría hacerle una pregunta a alguien presente? Hazla.",
+            "¿Qué estás listo/a para soltar?",
+            "¿Qué tan cómodo/a te sientes hablando sobre la sexualidad?",
+            "¿Cómo manejas los desencuentros en las relaciones?",
+            "¿Cuál es el mejor consejo que te han dado? ¿Pudiste transmitirlo a alguien más?",
+            "¿Qué rol cumples en tu familia? ¿Cómo te hace sentir?",
+            "¿Qué exigencias te impones? ¿Haces algo para suavizarlas?",
+            "Piensa en alguien a quien te gustaría abrazar. ¿Quién es?",
+            "Si pudieras conocer los sentimientos más profundos de una persona, ¿a quién elegirías? ¿Por qué?",
+            "¿Qué es la soledad para ti? ¿Te gusta estar solo/a? ¿Por qué?",
+            "¿Una decisión difícil que hayas tomado?",
+            "¿Cuáles son tus próximos objetivos?",
+            "Solo sé que soy ____",
+            "¿Hay algún momento en el que te sientas solo/a estando acompañado/a?",
+            "¿Hay algún aspecto de tu personalidad que te cuesta aceptar? ¿Buscas rechazarlo o integrarlo?",
+            "¿Cuándo fue la última vez que lloraste? ¿Por qué?",
+            "¿Qué lugar ocupa el deseo en tu vida?",
+            "¿Te mientes a ti mismo/a sobre algo? ¿Por qué?",
+            "¿Alguna vez fingiste afecto por alguien? ¿Por qué?",
+            "¿Cómo y por qué empezaste a aprender sobre sexualidad? ¿Te hubiera gustado que fuera de otra forma?",
+            "¿Cómo canalizas tu enojo? ¿Y tu tristeza?",
+            "¿Crees que existe una razón por la que te rodeas de ciertas personas?"
+        ];
+
+        // Iniciar el juego
+        const game = new ReflectionCardGame(reflectionQuestions);
+    </script>
+</body>
+</html>
